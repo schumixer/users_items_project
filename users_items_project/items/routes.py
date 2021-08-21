@@ -25,14 +25,25 @@ def new_item():
         return jsonify(response)
     abort(401)
     
-    
-    
-    if form.validate_on_submit():
-        post = Post(title=form.title.data, content=form.content.data, author=current_user)
-        db.session.add(post)
+@items.route("/items/<int:id>", methods=['DELETE'])
+def delete_item(id):
+    print(request.json)
+    if not request.json:
+        abort(400)
+        
+    user = Users.get_user_with_token(request.json.get("token"))
+    if user:
+        item = Items.query.get_or_404(id)
+        
+        if item.user != user:
+            abort(403)
+        db.session.delete(item)
         db.session.commit()
-        flash('Your post has been created!', 'success')
-        return redirect(url_for('main.home'))
-    return render_template('create_post.html', title='New Post',
-                           form=form, legend='New Post')
+        
+        response = {
+            "description": "The item was deleted"
+        }
+        return jsonify(response)
+       
+    abort(401)
 
