@@ -46,4 +46,26 @@ def delete_item(id):
         return jsonify(response)
        
     abort(401)
+    
+    
+@items.route("/items", methods=['GET'])
+def get_items():
+    print(request.json)
+    if not request.json:
+        abort(400)
+        
+    user = Users.get_user_with_token(request.json.get("token"))
+    if user:
+        
+        items =  Items.query.filter_by(author=user)
+        response = []
+        for item in items:
+            response.append(item.to_json())
+        print(response)
+        return jsonify(response)
+       
+    abort(401)
+    
+    
+
 

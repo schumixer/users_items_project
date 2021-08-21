@@ -13,7 +13,7 @@ class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     login = db.Column(db.String(20), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
-    items = db.relationship('Items', backref='user', lazy=True)
+    items = db.relationship('Items', backref='author', lazy=True)
 
     def get_token(self, expires_sec=1800):
         s = Serializer(current_app.config['SECRET_KEY'], expires_sec)
@@ -37,4 +37,8 @@ class Items(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     def __repr__(self):
-        return f"Post('{self.title}', '{self.date_posted}')"
+        return f"Post('{self.name}')"
+    
+    
+    def to_json(self):
+        return {"name": self.name}
