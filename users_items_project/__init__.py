@@ -12,6 +12,9 @@ login_manager = LoginManager(app)
 
 from users_items_project.users.routes import users
 from users_items_project.main.routes import main
+from users_items_project.items.routes import items
+
 app.register_blueprint(users)
 app.register_blueprint(main)
+app.register_blueprint(items)
 

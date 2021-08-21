@@ -35,7 +35,6 @@ def login():
         abort(400)
     user = Users.query.filter_by(login=request.json.get("login")).first()
     if user and user.password == request.json.get("password"):
-        login_user(user)
         response = {
             "token": user.get_token()
         }
