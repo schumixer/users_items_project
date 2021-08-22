@@ -11,7 +11,7 @@ def load_user(user_id):
 class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     login = db.Column(db.String(20), unique=True, nullable=False)
-    password = db.Column(db.String(60), nullable=False)
+    password = db.Column(db.String(15), nullable=False)
     items = db.relationship("Items", backref="author", lazy=True)
 
     def get_token(self, expires_sec=1800):

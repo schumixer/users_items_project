@@ -1,38 +1,34 @@
 from flask import  redirect, request, Blueprint, jsonify, abort
-from sqlalchemy.orm import load_only
+from flask_expects_json import expects_json
 from users_items_project import db
 from users_items_project.models import Users, Items
-from users_items_project.users.utils import is_valid_login
-
+from users_items_project.users.utils import is_new_login
+from users_items_project.config import Config
 
 users = Blueprint('users', __name__)
 
 
 @users.route("/registration", methods=['POST'])
+@expects_json(Config.registration_schema)
 def register():
-    print(request.json)
-    if not request.json:
-        abort(400)
     login = request.json.get("login")
-    if is_valid_login(login):
-        password = request.json.get("password")
-        user = Users(login=login,  password=password)
+    if is_new_login(login):
+        user = Users(login=login,  password=request.json.get("password"))
         db.session.add(user)
         db.session.commit()
         response = {
             "description": "The user was created"
         }
         return jsonify(response), 201
-    abort(401)
+    response = {
+            "description": "The user with such a login already exists. Please choose another login"
+        }
+    return jsonify(response), 200
     
     
 @users.route("/login", methods=['POST'])
+@expects_json(Config.registration_schema)
 def login():
-    # if current_user.is_authenticated:
-    #     abort(401)
-    print(request.json)
-    if not request.json:
-        abort(400)
     user = Users.query.filter_by(login=request.json.get("login")).first()
     if user and user.password == request.json.get("password"):
         response = {
@@ -40,6 +36,7 @@ def login():
         }
         return jsonify(response)
     abort(401)
+    
         
 @users.route("/send", methods=['POST'])
 def send():
