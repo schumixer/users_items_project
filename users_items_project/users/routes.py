@@ -39,42 +39,51 @@ def login():
     
         
 @users.route("/send", methods=['POST'])
+@expects_json(Config.item_move_schema)
 def send():
-    print(request.json)
-    if not request.json:
-        abort(400)
     user_from = Users.get_user_with_token(request.json.get("token"))
     if user_from:
         user_to =  Users.query.filter_by(login = request.json.get("login")).first()
         if user_to:
             selected_item =  Items.query.filter_by(author=user_from, id = int(request.json.get("id"))).first()
             if selected_item:
-            
                 response = {
-                    "link": Users.get_link(user_login_to=user_to.login, item_id=selected_item.id)
+                    "link": Users.get_link(user_from_id=user_from.id,
+                                           user_to_id=user_to.id, 
+                                           item_id=selected_item.id)
                 }    
-                    
                 return jsonify(response)
-    abort(401)
+            else:
+                abort(404, "The item was not found")
+        else:
+            abort(404, "The user was not found")
+    else:
+        abort(401)
 
 
-@users.route("/get/<token>", methods=['GET'])
-def get(token):
-    print(request.json)
-    if not request.json:
-        abort(400)
-    user = Users.get_user_with_token(request.json.get("token"))
-    if user:
-        data = Users.get_data_from_link(token)
-        user_from_login = data["user_login_to"]
-        item_id = data["item_id"]
-        # user_login = Items.query.get(item_id).author.login
-        if user.login == user_from_login:
-            Items.query.get(item_id).user_id = Users.query.filter_by(login = user_from_login).first().id
-            db.session.commit()
-            response = {
-                "description": "The item was moved"
-            }
-            return jsonify(response), 201
-    abort(401)
+@users.route("/get", methods=['GET'])
+def get():
+    user_to = Users.get_user_with_token(request.args.get("token"))
+    if user_to:
+        data = Users.get_data_from_link(request.args.get("data"))
+        if data:
+            user_from_id_link = data["user_from_id"]
+            user_to_id_link = data["user_to_id"]
+            item_id_link = data["item_id"]
+            if Items.query.filter_by(user_id = user_from_id_link, id = int(item_id_link)).first():
+                if user_to.id == user_to_id_link:
+                    Items.query.get(item_id_link).user_id = user_to.id
+                    db.session.commit()
+                    response = {
+                        "description": "The item was moved"
+                    }
+                    return jsonify(response), 200
+                else:
+                    abort(403, "You have no access to this resourse. Wrong login")
+            else:
+                abort(404, "The user that had the item doesn't exist or the user doesn't have this item")
+        else:
+            abort(401)
+    else:
+        abort(401)
     

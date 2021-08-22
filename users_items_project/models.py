@@ -19,10 +19,13 @@ class Users(db.Model, UserMixin):
         return s.dumps({"user_id": self.id}).decode("utf-8")
     
     @staticmethod
-    def get_link(user_login_to, item_id, expires_sec=1800):
+    def get_link(user_from_id,  item_id, user_to_id, expires_sec=1800):
         s = Serializer(current_app.config["SECRET_KEY"], expires_sec)
-        token = s.dumps({"user_login_to": user_login_to, "item_id": item_id}).decode("utf-8")
-        link = url_for("users.get", token=token, _external=True)
+        token = s.dumps({"user_from_id": user_from_id,
+                         "item_id": item_id,
+                         "user_to_id": user_to_id,
+                         }).decode("utf-8")
+        link = url_for("users.get", data=token, _external=True)
         return link
 
     @staticmethod
@@ -49,7 +52,7 @@ class Users(db.Model, UserMixin):
 
 class Items(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
+    name = db.Column(db.String(50), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
 
     def __repr__(self):
