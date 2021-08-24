@@ -2,7 +2,7 @@ from flask import request
 from flask_restx  import  Namespace, Resource, fields
 
 list_of_users_info = []
-#Regostration
+#Registration
 registration_namespace = Namespace("registration", description="Registration API")
 
 registration_model = registration_namespace.model('registration', {

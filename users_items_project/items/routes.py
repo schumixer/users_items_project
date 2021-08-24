@@ -21,7 +21,7 @@ def new_item():
             "name": item.name,
             "description": "The item was created",
         }
-        return jsonify(response)
+        return jsonify(response), 201
     abort(401)
 
 
@@ -37,20 +37,27 @@ def delete_item(id):
         db.session.commit()
 
         response = {"description": "The item was deleted"}
-        return jsonify(response)
+        return jsonify(response), 200
 
     abort(401)
 
 
 @items.route("/items", methods=["GET"])
 def get_items():
-    print(request.args)
-    user = Users.get_user_with_token(request.args.get("token"))
-    if user:
-        items = Items.query.filter_by(author=user)
-        response = []
-        for item in items:
-            response.append(item.to_json())
-        return jsonify(response)
-    abort(401)
+    token = request.args.get("token")
+    if token:
+        user = Users.get_user_with_token(token)
+        if user:
+            items = Items.query.filter_by(author=user)
+            response = []
+            for item in items:
+                response.append(item.to_json())
+            return jsonify(response)
+        else:
+            abort(401)
+    else:
+        response = {
+            "description": "Wrong input"
+        }
+        return jsonify(response), 400
 
