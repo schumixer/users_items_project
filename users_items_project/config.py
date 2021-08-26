@@ -1,6 +1,7 @@
+import os
+basedir = os.path.abspath(os.path.dirname(__file__))
 class Config:
-    SECRET_KEY = "fcde7450d4e5aac339c0162ff2d4c99b"
-    SQLALCHEMY_DATABASE_URI = "sqlite:///site.db"
+    SECRET_KEY = os.environ.get('SECRET_KEY') or "fcde7450d4e5aac339c0162ff2d4c99b"
     registration_schema = {
         'type': 'object',
         'properties': {
@@ -33,3 +34,25 @@ class Config:
         },
         'required': ['id','login', 'token']
     }
+
+
+# class TestingConfig(Config):
+#     TESTING = True
+#     SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URL') or \
+#     'sqlite://'
+    
+class ProductionConfig(Config):
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+    'sqlite:///' + os.path.join(basedir, 'data.db')
+    
+class DevelopmentConfig(Config):
+    DEBUG = True
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or \
+    'sqlite:///' + os.path.join(basedir, 'data-dev.db')
+    
+# config = {
+#     'development': DevelopmentConfig,
+#     'testing': TestingConfig,
+#     'production': ProductionConfig,
+#     'default': DevelopmentConfig
+# }
